@@ -1,0 +1,24 @@
+{
+  "name": "usersLibrary",
+  "version": "1.0.0",
+  "description": "喵鱼 - 用户库的项目",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qq362334256/usersLibrary.git"
+  },
+  "author": "miaoyu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/qq362334256/usersLibrary/issues"
+  },
+  "homepage": "https://github.com/qq362334256/usersLibrary#readme",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "express": "^4.15.3",
+    "multer": "^1.3.0"
+  }
+}
