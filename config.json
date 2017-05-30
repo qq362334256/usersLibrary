@@ -1,4 +1,5 @@
 {
 	"port": 5001,
-	"host": "localhost"
+	"host": "localhost",
+	"db_url": "mongodb://localhost:27017/usersLibrary"
 }
