@@ -12,23 +12,16 @@ const { host, port } = require('./config.json');
 // 使用中间件
 app.use([...middlewares]);
 
+// app.get('/', (req, res) => {
+// 	res.send('get请求');
+// });
+
+
+// 引入用户模块路由
+app.use('/user' ,require('./src/user/router.config.js'));
 
 
 
 
 
-app.get('/', (req, res) => {
-	// 连接数据库
-	// const db = require('./DB/mongoDB.js');
-	// db.bind('BD_USERS');
-	// console.log(db.DB_USERS.find());
-
-
-	res.send('get请求');
-});
-
-
-
-
-
-app.listen(port, host, () => console.log('API服务启动，端口号为：5001'));
+app.listen(port, host, () => console.log(`API服务启动，地址为：http://${host}:${port}`));
