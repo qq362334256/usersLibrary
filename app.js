@@ -9,6 +9,15 @@ const middlewares = require('./middleware/basic.js');
 const { host, port } = require('./config.json');
 
 
+// 临时跨域头
+app.all('*', function(req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+
+    next();
+});
+
+
+
 // 使用中间件
 app.use([...middlewares]);
 
@@ -18,7 +27,7 @@ app.use([...middlewares]);
 
 
 // 引入用户模块路由
-app.use('/user' ,require('./src/user/router.config.js'));
+app.use('/users' ,require('./src/users/router.config.js'));
 
 
 

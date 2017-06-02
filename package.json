@@ -4,7 +4,8 @@
   "description": "喵鱼 - 用户库的项目",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "mongo": "cd F:/mongoDB/bin && mongod --dbpath F:/mongoDB/data"
   },
   "repository": {
     "type": "git",
