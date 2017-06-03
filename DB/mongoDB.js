@@ -1,5 +1,5 @@
 /*
- * mongodb - config文件
+ * mongodb 配置文件
  * Date: 2017-06-01
  * Author: miaoyu
  */

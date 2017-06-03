@@ -4,11 +4,19 @@
  * Author: miaoyu
  */
 const db = require('./../../../DB/mongoDB.js');
+const { isMustNull } = require('./../../public/service/bodyValidate.js');
+
+
+isMustNull({
+
+});
 
 
 // 创建用户
 exports.createUser = (req, res) => {
-    console.log(111)
-
-    res.send('createUser');
+    db.bind('DB_USERS');
+    db.DB_USERS.find().toArray(function() {
+        res.send(arguments);
+        db.close();
+    });
 };

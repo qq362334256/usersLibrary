@@ -1,5 +1,5 @@
 /*
- * API - middleware(中间件) 配置文件
+ * middleware(中间件) 配置文件
  * Date: 2017-05-24
  * Author: miaoyu
  */
@@ -13,7 +13,7 @@ const timeouts = require('connect-timeout');
 
 //  导出中间件模块
 module.exports = [
-	morgan('tiny'),  // 日志中间件
+	morgan(':method :url :status :res[content-length] - :response-time ms - :date'),  // 日志中间件
 	timeouts('6s'),  // 设置超时时间
 	compression(),   // 压缩数据，这个中间件必须放在最前面
 	parJson(), // 解析 application/json 请求方式

@@ -5,6 +5,7 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "supervisor app.js",
     "mongo": "cd F:/mongoDB/bin && mongod --dbpath F:/mongoDB/data"
   },
   "repository": {

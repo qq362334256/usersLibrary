@@ -1,5 +1,5 @@
 /*
- * user模块 - config文件
+ * user 路由配置文件
  * Date: 2017-06-01
  * Author: miaoyu
  */
