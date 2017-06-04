@@ -13,7 +13,7 @@ const { getAllErrorBody } = require('./resBody.js');
  * 返回：(array)必填项缺失数组
  */
 const isMustNull = (mustObj, body) => {
-    let lackMusts= [];
+    let lackMusts = [];
 
     // 遍历req传递回来的body对象是否缺少必填项
     Object.keys(mustObj).forEach(key => {
@@ -66,7 +66,7 @@ const validateParamType = (query, body) => {
  * body(object) - 由req传递回来的body参数对象
  * 返回：(array)，属性错误的参数数组
  */
-const validateParam = (mustObj,query,body) => {
+const validateParam = (mustObj, query, body) => {
     const mustErrors = isMustNull(mustObj, body);
 
     // 必填项都传了
@@ -76,7 +76,7 @@ const validateParam = (mustObj,query,body) => {
         // 参数类型传递错误
         if (paramErrors.length !== 0) return {
             validate: false,
-            body: getAllErrorBody(paramErrors)
+            body: getAllErrorBody(paramErrors, 420)
         };
 
         // 验证成功
@@ -92,7 +92,7 @@ const validateParam = (mustObj,query,body) => {
     // 缺失必填项
     return {
         validate: false,
-        body: getAllErrorBody(mustErrors)
+        body: getAllErrorBody(mustErrors, 420)
     };
 };
 
