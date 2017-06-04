@@ -7,7 +7,7 @@ const express = require('express');
 const router = express.Router();
 
 
-// 创建用户
+// 注册用户
 router.post('/user', require('./controller/user.js').createUser);
 
 
