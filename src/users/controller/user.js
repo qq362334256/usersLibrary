@@ -95,18 +95,51 @@ exports.createUser = ({ body }, res) => {
 
     // 获取完整的参数 / 绑定数据库
     query = getFullParam(query, body);
-    db.bind('DB_USERS');
 
-    // 判断验证码是否匹配
-    db.DB_USERS.findOne({ code: query.code }, (error, data) => {
-        if (error) {
-            // 数据库查询失败没必要继续了
-            db.close();
-            res.send(getAllErrorBody(['数据库查询出错'], 520));
 
-            return;
-        };
 
+    // 连接数据库
+    const connectMongo = function* () {
+        // 绑定集合
+        db.bind('DB_USERS');
+
+        const data = yield new Promise(
+            (resolve, reject) => db.DB_USERS.findOne(
+                { code: query.code }, (error, data) => {
+                    if (error) {
+                        // 数据库查询失败没必要继续了
+                        db.close();
+                        res.send(getAllErrorBody(['数据库查询出错'], 520));
+                        reject(error);
+
+                        return;
+                    };
+
+                    resolve({db, data});
+                }
+            )
+        );
+
+        yield new Promise(
+            (resolve, reject) => db.DB_USERS.update(
+                { _id: data._id }, query, (error, result) => {
+                    if (error) {
+                        // 数据库查询失败没必要继续了
+                        db.close();
+                        res.send(getAllErrorBody(['数据库写入失败'], 520));
+                        reject(error);
+
+                        return;
+                    };
+
+                    resolve({db, result});
+                }
+            )
+        )
+    };
+
+    const g = connectMongo();
+    g.next().value.then(({db, data}) => {
         // 查询不到验证码 - 返回了没必要继续了
         if (!data || !data.phone) {
             db.close();
@@ -123,23 +156,14 @@ exports.createUser = ({ body }, res) => {
             return;
         };
 
-
         // 没有注册可以进行其他操作
         // 生成userid / companyId / companyName
         query.userId = uuid();
         query.companyId = '123456';
         query.companyName = '喵鱼';
 
-        // 修改数据库生成新数据
-        db.DB_USERS.update({ _id: data._id }, query, (error, result) => {
-            if (error) {
-                // 数据库查询失败没必要继续了
-                db.close();
-                res.send(getAllErrorBody(['数据库写入失败'], 520));
-
-                return;
-            };
-
+        // 执行下一个流
+        g.next(data).value.then(({db, result}) => {
             // 添加成功信息
             reqBody.msg = '用户注册成功！'
 
@@ -147,5 +171,61 @@ exports.createUser = ({ body }, res) => {
             db.close();
             res.send(JSON.stringify(reqBody));
         });
-    });
+    })
+
+
+
+
+    //
+    // // 判断验证码是否匹配
+    // db.DB_USERS.findOne({ code: query.code }, (error, data) => {
+    //     if (error) {
+    //         // 数据库查询失败没必要继续了
+    //         db.close();
+    //         res.send(getAllErrorBody(['数据库查询出错'], 520));
+    //
+    //         return;
+    //     };
+    //
+    //     // 查询不到验证码 - 返回了没必要继续了
+    //     if (!data || !data.phone) {
+    //         db.close();
+    //         res.send(getAllErrorBody(['手机验证码错误']));
+    //
+    //         return;
+    //     };
+    //
+    //     // 查询userId，判断手机号是否注册了
+    //     if (data.userId) {
+    //         db.close();
+    //         res.send(getAllErrorBody(['该手机号已经注册']));
+    //
+    //         return;
+    //     };
+    //
+    //
+    //     // 没有注册可以进行其他操作
+    //     // 生成userid / companyId / companyName
+    //     query.userId = uuid();
+    //     query.companyId = '123456';
+    //     query.companyName = '喵鱼';
+    //
+    //     // 修改数据库生成新数据
+    //     db.DB_USERS.update({ _id: data._id }, query, (error, result) => {
+    //         if (error) {
+    //             // 数据库查询失败没必要继续了
+    //             db.close();
+    //             res.send(getAllErrorBody(['数据库写入失败'], 520));
+    //
+    //             return;
+    //         };
+    //
+    //         // 添加成功信息
+    //         reqBody.msg = '用户注册成功！'
+    //
+    //         // 关闭数据库 / 返回客户端信息
+    //         db.close();
+    //         res.send(JSON.stringify(reqBody));
+    //     });
+    // });
 };
