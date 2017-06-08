@@ -3,9 +3,6 @@
  * Date: 2017/6/2 0002
  * Author: miaoyu
  */
-const db = require('./../../../DB/mongoDB.js');
-
-
 // 登录
 exports.login = (req, res) => {
     console.log(111)

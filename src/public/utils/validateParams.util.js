@@ -1,9 +1,8 @@
 /*
- * bodyValidate(传输内容验证)服务
- * Date: 2017/6/3
+ * 验证参数工具类
+ * Date: 2017/6/9 0009
  * Author: miaoyu
  */
-const { getAllErrorBody } = require('./resBody.js');
 
 
 /*
@@ -12,7 +11,7 @@ const { getAllErrorBody } = require('./resBody.js');
  * body(object) - 由req传递回来的body参数对象
  * 返回：(array)必填项缺失数组
  */
-const isMustNull = (mustObj, body) => {
+exports.isMustNull = (mustObj, body) => {
     let lackMusts = [];
 
     // 遍历req传递回来的body对象是否缺少必填项
@@ -30,7 +29,7 @@ const isMustNull = (mustObj, body) => {
  * body(object) - 由req传递回来的body参数对象
  * 返回：(array)，属性错误的参数数组
  */
-const validateParamType = (query, body) => {
+exports.validateParamType = (query, body) => {
     let typeErrors = [];
 
     Object.entries(query).forEach(function([key, { type }]) {
@@ -57,49 +56,4 @@ const validateParamType = (query, body) => {
     });
 
     return typeErrors;
-};
-
-
-/*
- * 验证参数准确性
- * query(object) - 内定的参数类型对象
- * body(object) - 由req传递回来的body参数对象
- * 返回：(array)，属性错误的参数数组
- */
-const validateParam = (mustObj, query, body) => {
-    const mustErrors = isMustNull(mustObj, body);
-
-    // 必填项都传了
-    if (mustErrors.length === 0) {
-        const paramErrors = validateParamType(query, body);
-
-        // 参数类型传递错误
-        if (paramErrors.length !== 0) return {
-            validate: false,
-            body: getAllErrorBody(paramErrors, 420)
-        };
-
-        // 验证成功
-        return {
-            validate: true,
-            body: {
-                code: 200,
-                msg: ''
-            }
-        };
-    };
-
-    // 缺失必填项
-    return {
-        validate: false,
-        body: getAllErrorBody(mustErrors, 420)
-    };
-};
-
-
-// 导出模块
-module.exports = {
-    isMustNull,
-    validateParamType,
-    validateParam
 };

@@ -5,9 +5,9 @@
  */
 const db = require('./../../../DB/mongoDB.js');
 const uuid = require('uuid');
-const { validateParam } = require('./../../public/service/bodyValidate.js');
-const { getFullParam } = require('./../../public/service/paramsOperate.js');
-const { getAllErrorBody } = require('./../../public/service/resBody.js');
+const { validateParam } = require('./../../public/services/bodyValidate.js');
+const { getFullParam } = require('./../../public/services/paramsOperate.js');
+const { getAllErrorBody } = require('./../../public/services/resBody.js');
 
 
 // 创建用户
