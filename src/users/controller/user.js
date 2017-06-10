@@ -118,10 +118,6 @@ exports.createUser = ({ body }, res) => {
                 type: 'string',
                 val: ''
             },
-            createTime: { // 创建时间
-                type: 'number',
-                val: Date.parse(new Date())
-            },
             updateTime: { // 修改时间
                 type: 'number',
                 val: Date.parse(new Date())
@@ -163,7 +159,7 @@ exports.createUser = ({ body }, res) => {
         params.companyName = '喵鱼科技工作室';
 
         // 执行下一个数据查询操作
-        curd.next({ data, params }).value.then((db, data) => {
+        curd.next({ data, params }).value.then(({ db, data }) => {
             // 关闭数据库 / 返回客户端信息
             db.close();
             res.send(JSON.stringify({
