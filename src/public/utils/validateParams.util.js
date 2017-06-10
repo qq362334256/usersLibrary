@@ -8,15 +8,15 @@
 /*
  * 验证必填项是否为空
  * mustObj(object) - 必填项参数
- * body(object) - 由req传递回来的body参数对象
+ * reqBody(object) - 由req传递回来的body参数对象
  * 返回：(array)必填项缺失数组
  */
-exports.isMustNull = (mustObj, body) => {
+exports.isMustNull = (mustObj, reqBody) => {
     let lackMusts = [];
 
     // 遍历req传递回来的body对象是否缺少必填项
     Object.keys(mustObj).forEach(key => {
-        if (!body[key]) lackMusts.push(`缺少必传参数：${key}`);
+        if (!reqBody[key]) lackMusts.push(`缺少必传参数：${key}`);
     });
 
     return lackMusts;
@@ -26,14 +26,14 @@ exports.isMustNull = (mustObj, body) => {
 /*
  * 验证参数类型是否正确
  * query(object) - 内定的参数类型对象
- * body(object) - 由req传递回来的body参数对象
+ * reqBody(object) - 由req传递回来的body参数对象
  * 返回：(array)，属性错误的参数数组
  */
-exports.validateParamType = (query, body) => {
+exports.validateParamType = (query, reqBody) => {
     let typeErrors = [];
 
     Object.entries(query).forEach(function([key, { type }]) {
-        const val = body[key];
+        const val = reqBody[key];
 
         if (val !== undefined)
             switch (type) {

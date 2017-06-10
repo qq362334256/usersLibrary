@@ -1,6 +1,6 @@
 /*
- * reqBody(返回内容)服务
- * Date: 2017/6/4
+ * 错误 code 处理工具类
+ * Date: 2017/6/9 0009
  * Author: miaoyu
  */
 const config = {
