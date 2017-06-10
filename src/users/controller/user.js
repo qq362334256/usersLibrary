@@ -10,30 +10,49 @@ const { getAllErrorBody } = require('./../../public/utils/errorCodeHandle.util.j
 
 
 // 数据库CURD操作
-const dbCurdGenneroter = function* (params) {
+const userCurdGenneroter = function* (params) {
+    const TABLE = 'T_USERS';
+
     // 连接数据库
-    db.bind('T_USERS');
+    db.bind(TABLE);
 
     // 查询验证码
-    const data = yield new Promise(
-        (resolve, reject) => db.DB_USERS.findOne(
+    const info = yield new Promise(
+        (resolve, reject) => db[TABLE].findOne(
             { code: params.code }, (error, data) => {
-                console.log(error)
-                console.log(data)
-
+                // 数据库查询失败没必要继续了
                 if (error) {
-                    // 数据库查询失败没必要继续了
                     db.close();
-                    reject(error);
                     res.send(getAllErrorBody(['数据库查询出错'], 520));
+                    reject(error);
 
                     return;
                 };
 
-                resolve({db, data});
+                // 成功返回
+                resolve({ db, data });
             }
         )
     );
+
+    // 修改预置入的信息为完整用户信息
+    const { data, params: updateParams } = info;
+    yield new Promise(
+        (resolve, reject) => db[TABLE].update(
+            { _id: data._id }, updateParams, (error, data) => {
+                // 数据库查询失败没必要继续了
+                if (error) {
+                    db.close();
+                    res.send(getAllErrorBody(['数据库写入失败'], 520));
+                    reject(error);
+
+                    return;
+                };
+
+                resolve({ db, data });
+            }
+        )
+    )
 };
 
 
@@ -115,123 +134,42 @@ exports.createUser = ({ body }, res) => {
     if (!params) return;
 
 
-    const curd = dbCurdGenneroter(params);
+    // 执行数据库crud操作方法集
+    const curd = userCurdGenneroter(params);
 
     // 查询验证是否存在 / 查询是否和手机号匹配
-    curd.next();
+    curd.next().value.then(({ db, data }) => {
+        // 查询不到验证码 - 返回了没必要继续了
+        if (!data || !data.phone) {
+            db.close();
+            res.send(getAllErrorBody(['手机验证码错误']));
+
+            return;
+        };
+
+        // 查询userId，如果有userId就说明已经注册了
+        if (data.userId) {
+            db.close();
+            res.send(getAllErrorBody(['该手机号已经注册']));
+
+            return;
+        };
 
 
-    // const connectMongo = function* () {
-    //
-    //
-    //
-    //
-    //     yield new Promise(
-    //         (resolve, reject) => db.DB_USERS.update(
-    //             { _id: data._id }, query, (error, result) => {
-    //                 if (error) {
-    //                     // 数据库查询失败没必要继续了
-    //                     db.close();
-    //                     res.send(getAllErrorBody(['数据库写入失败'], 520));
-    //                     reject(error);
-    //
-    //                     return;
-    //                 };
-    //
-    //                 resolve({db, result});
-    //             }
-    //         )
-    //     )
-    // };
+        // 没有注册可以进行其他操作
+        // 生成 userid / companyId / companyName
+        params.userId = uuid();
+        params.companyId = '123456789';
+        params.companyName = '喵鱼科技工作室';
 
-    // const g = connectMongo();
-    // g.next().value.then(({db, data}) => {
-    //     // 查询不到验证码 - 返回了没必要继续了
-    //     if (!data || !data.phone) {
-    //         db.close();
-    //         res.send(getAllErrorBody(['手机验证码错误']));
-
-    //         return;
-    //     };
-
-    //     // 查询userId，判断手机号是否注册了
-    //     if (data.userId) {
-    //         db.close();
-    //         res.send(getAllErrorBody(['该手机号已经注册']));
-
-    //         return;
-    //     };
-
-    //     // 没有注册可以进行其他操作
-    //     // 生成userid / companyId / companyName
-    //     query.userId = uuid();
-    //     query.companyId = '123456';
-    //     query.companyName = '喵鱼';
-
-    //     // 执行下一个流
-    //     g.next(data).value.then(({db, result}) => {
-    //         // 添加成功信息
-    //         reqBody.msg = '用户注册成功！'
-
-    //         // 关闭数据库 / 返回客户端信息
-    //         db.close();
-    //         res.send(JSON.stringify(reqBody));
-    //     });
-    // })
-
-
-
-
-    //
-    // // 判断验证码是否匹配
-    // db.DB_USERS.findOne({ code: query.code }, (error, data) => {
-    //     if (error) {
-    //         // 数据库查询失败没必要继续了
-    //         db.close();
-    //         res.send(getAllErrorBody(['数据库查询出错'], 520));
-    //
-    //         return;
-    //     };
-    //
-    //     // 查询不到验证码 - 返回了没必要继续了
-    //     if (!data || !data.phone) {
-    //         db.close();
-    //         res.send(getAllErrorBody(['手机验证码错误']));
-    //
-    //         return;
-    //     };
-    //
-    //     // 查询userId，判断手机号是否注册了
-    //     if (data.userId) {
-    //         db.close();
-    //         res.send(getAllErrorBody(['该手机号已经注册']));
-    //
-    //         return;
-    //     };
-    //
-    //
-    //     // 没有注册可以进行其他操作
-    //     // 生成userid / companyId / companyName
-    //     query.userId = uuid();
-    //     query.companyId = '123456';
-    //     query.companyName = '喵鱼';
-    //
-    //     // 修改数据库生成新数据
-    //     db.DB_USERS.update({ _id: data._id }, query, (error, result) => {
-    //         if (error) {
-    //             // 数据库查询失败没必要继续了
-    //             db.close();
-    //             res.send(getAllErrorBody(['数据库写入失败'], 520));
-    //
-    //             return;
-    //         };
-    //
-    //         // 添加成功信息
-    //         reqBody.msg = '用户注册成功！'
-    //
-    //         // 关闭数据库 / 返回客户端信息
-    //         db.close();
-    //         res.send(JSON.stringify(reqBody));
-    //     });
-    // });
+        // 执行下一个数据查询操作
+        curd.next({ data, params }).value.then((db, data) => {
+            // 关闭数据库 / 返回客户端信息
+            db.close();
+            res.send(JSON.stringify({
+                code: 200,
+                msg: '用户注册成功！'
+            }));
+        });
+    });
 };
