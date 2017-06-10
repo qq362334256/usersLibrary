@@ -3,7 +3,7 @@
  * Date: 2017/6/2 0002
  * Author: miaoyu
  */
-const db = require('./../../../DB/mongoDB.js');
+const db = require('./../../../db/mongoDB.js');
 const uuid = require('uuid');
 const { validateParam } = require('./../../public/services/reqBody.service.js');
 const { getAllErrorBody } = require('./../../public/utils/errorCodeHandle.util.js');
