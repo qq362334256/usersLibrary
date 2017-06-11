@@ -16,8 +16,8 @@ module.exports = [
 	morgan(':method :url :status :res[content-length] - :response-time ms - :date'),  // 日志中间件
 	timeouts('15s'),  // 设置超时时间
 	compression(),   // 压缩数据，这个中间件必须放在最前面
+    parUrlencoded({ extended: true }),  // 解析 application/x-www-form-urlencoded 请求方式
 	parJson(), // 解析 application/json 请求方式
-	parUrlencoded({ extended: true }),  // 解析 application/x-www-form-urlencoded 请求方式
 	responseTime(), // 设置响应的时间
 	// multer() // 解析 multipart/form-data 请求方式(文件上传)
 ];

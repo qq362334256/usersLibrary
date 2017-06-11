@@ -1,5 +1,9 @@
 {
 	"port": 5001,
 	"host": "localhost",
-	"db_url": "mongodb://localhost:27017/usersLibrary"
+	"MONGODB_URL": "mongodb://localhost:27017/usersLibrary",
+	"redis": {
+		"host": "127.0.0.1",
+		"port": 6379
+	}
 }

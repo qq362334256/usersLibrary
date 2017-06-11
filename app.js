@@ -15,6 +15,8 @@ app.use([...require('./middleware/basic.js')]);
 app.use(require('./middleware/headers.js'));
 
 
+// 引入验证码模块路由
+app.use('/verCode' ,require('./src/verCode/router.config.js'));
 // 引入用户模块路由
 app.use('/users' ,require('./src/users/router.config.js'));
 

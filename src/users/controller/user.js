@@ -3,8 +3,8 @@
  * Date: 2017/6/2 0002
  * Author: miaoyu
  */
-const db = require('./../../../db/mongoDB.js');
 const uuid = require('uuid');
+const db = require('./../../public/services/mongodb.service.js');
 const { validateParam } = require('./../../public/services/reqBody.service.js');
 const { getAllErrorBody } = require('./../../public/utils/errorCodeHandle.util.js');
 
@@ -66,7 +66,7 @@ exports.createUser = ({ body }, res) => {
                 type: 'string'
             },
             code: { // 验证码
-                type: 'number'
+                type: 'string'
             }
         },
         query = Object.assign({ // 预设值
@@ -123,8 +123,7 @@ exports.createUser = ({ body }, res) => {
                 val: Date.parse(new Date())
             }
         }, mustPar),
-        params = validateParam(mustPar, query, body, res);
-
+        params = validateParam(mustPar, query, body, res); // 最终得值
 
     // 全部通过验证服务返回正确的参数才能继续
     if (!params) return;
