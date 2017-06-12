@@ -6,9 +6,7 @@
 2、防止恶意请求，限制接口 / ip请求次数
 
 
-抽取服务：
-1、user接口
+安装redis
 
-
-创建mongodb集合
-1、C_USERS
+创建数据库mongodb
+userlibrary

@@ -29,5 +29,5 @@ exports.getPassWordHash = passWord => {
     sha256.update(`${passStart}@${passWord}@${passEnd}`);
 
     // 返回最终加密 hex 的密码
-    return sha256.digest('hex')
+    return sha256.digest('hex');
 };

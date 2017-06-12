@@ -3,8 +3,8 @@
  * Date: 2017/6/9 0009
  * Author: miaoyu
  */
- const { isMustNull, validateParamType } = require('./../utils/validateParams.util.js');
- const { getAllErrorBody } = require('./../utils/errorCodeHandle.util.js');
+const { isMustNull, validateParamType, isLegal } = require('./../utils/validateParams.util.js');
+const { getAllErrorBody } = require('./../utils/errorCodeHandle.util.js');
 
 
 /*
@@ -40,13 +40,26 @@ const validateParam = (mustObj, query, reqBody, res) => {
 
     // 必填项都传了
     if (mustErrors.length === 0) {
+
+        // 有参数类型验证不合法
         const paramErrors = validateParamType(query, reqBody);
+        if (paramErrors.length !== 0) {
+            res.send(getAllErrorBody(paramErrors, 420));
+
+            return;
+        };
+
+        // 有参数格式验证不合法
+        const legalErrors = isLegal(reqBody);
+        if (legalErrors.length !== 0) {
+            res.send(getAllErrorBody(legalErrors, 420));
+
+            return;
+        };
+
 
         // 所有参数类型合法
-        if (paramErrors.length === 0) return getFullParam(query, reqBody);
-
-        // 有参数验证不合法
-        res.send(getAllErrorBody(paramErrors, 420));
+        return getFullParam(query, reqBody);
     };
 
     // 缺失必填项

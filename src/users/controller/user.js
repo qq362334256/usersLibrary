@@ -118,7 +118,7 @@ exports.createUser = ({ body }, res) => {
     curd.next().value.then(([redisData, { dbCollection, data: mongoData }]) => {
 
         // 查询不到验证码 - 返回了没必要继续了
-        if (!redisData) {
+        if (!redisData || redisData !== params.code) {
             dbCollection.close();
             res.send(getAllErrorBody(['手机验证码错误']));
 
