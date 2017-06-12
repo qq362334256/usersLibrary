@@ -8,3 +8,7 @@
 
 抽取服务：
 1、user接口
+
+
+创建mongodb集合
+1、C_USERS

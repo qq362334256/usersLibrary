@@ -4,56 +4,11 @@
  * Author: miaoyu
  */
 const uuid = require('uuid');
-const db = require('./../../public/services/mongodb.service.js');
+const { redisGet } = require('./../../public/services/redis.service.js');
+const { mongodb, findOne, insert } = require('./../../public/services/mongodb.service.js');
 const { validateParam } = require('./../../public/services/reqBody.service.js');
 const { getAllErrorBody } = require('./../../public/utils/errorCodeHandle.util.js');
-
-
-// 数据库CURD操作
-const userCurdGenneroter = function* (params) {
-    const TABLE = 'T_USERS';
-
-    // 连接数据库
-    db.bind(TABLE);
-
-    // 查询验证码
-    const info = yield new Promise(
-        (resolve, reject) => db[TABLE].findOne(
-            { code: params.code }, (error, data) => {
-                // 数据库查询失败没必要继续了
-                if (error) {
-                    db.close();
-                    res.send(getAllErrorBody(['数据库查询出错'], 520));
-                    reject(error);
-
-                    return;
-                };
-
-                // 成功返回
-                resolve({ db, data });
-            }
-        )
-    );
-
-    // 修改预置入的信息为完整用户信息
-    const { data, params: updateParams } = info;
-    yield new Promise(
-        (resolve, reject) => db[TABLE].update(
-            { _id: data._id }, updateParams, (error, data) => {
-                // 数据库查询失败没必要继续了
-                if (error) {
-                    db.close();
-                    res.send(getAllErrorBody(['数据库写入失败'], 520));
-                    reject(error);
-
-                    return;
-                };
-
-                resolve({ db, data });
-            }
-        )
-    )
-};
+const { getPassWordHash } = require('./../../public/utils/math.util.js');
 
 
 // 创建用户
@@ -118,6 +73,10 @@ exports.createUser = ({ body }, res) => {
                 type: 'string',
                 val: ''
             },
+            createTime: { // 创建时间
+                type: 'number',
+                val: Date.parse(new Date())
+            },
             updateTime: { // 修改时间
                 type: 'number',
                 val: Date.parse(new Date())
@@ -129,22 +88,46 @@ exports.createUser = ({ body }, res) => {
     if (!params) return;
 
 
-    // 执行数据库crud操作方法集
-    const curd = userCurdGenneroter(params);
+    // 数据库CURD操作
+    const curd = function* (params, res) {
+        // 连接数据库集合
+        const dbCollection = mongodb.bind('C_USERS');
 
-    // 查询验证是否存在 / 查询是否和手机号匹配
-    curd.next().value.then(({ db, data }) => {
+        // 查询缓存数据库，判断创建用户的验证码缓存是否存在
+        const findRedisCode = redisGet({
+            res,
+            key: `phoneVerCode${params.phone}`
+        }).catch(error => console.error(`访问redis手机验证码出错!${error}`));
+
+        // 查询mongo数据库，判断创建用户的验证码是否存在
+        const findMongoCode = findOne(dbCollection, {
+            res,
+            query: { code: params.code, phone: params.phone }
+        }).catch(error => console.error(`访问mongo手机验证码出错!${error}`));
+
+
+        // 查询验证码
+        const info = yield Promise.all([findRedisCode, findMongoCode]);
+
+        // 插入新建用户信息
+        return insert(dbCollection, { res, info }).catch(error => console.error(`创建用户mongo插入出错!${error}`));;
+    }(params, res);
+
+
+    // 判断手机验证码是否匹配成功
+    curd.next().value.then(([redisData, { dbCollection, data: mongoData }]) => {
+
         // 查询不到验证码 - 返回了没必要继续了
-        if (!data || !data.phone) {
-            db.close();
+        if (!redisData) {
+            dbCollection.close();
             res.send(getAllErrorBody(['手机验证码错误']));
 
             return;
         };
 
         // 查询userId，如果有userId就说明已经注册了
-        if (data.userId) {
-            db.close();
+        if (mongoData && mongoData.userId) {
+            dbCollection.close();
             res.send(getAllErrorBody(['该手机号已经注册']));
 
             return;
@@ -152,15 +135,15 @@ exports.createUser = ({ body }, res) => {
 
 
         // 没有注册可以进行其他操作
-        // 生成 userid / companyId / companyName
+        // 生成 userid / 编译密码
         params.userId = uuid();
-        params.companyId = '123456789';
-        params.companyName = '喵鱼科技工作室';
+        params.password = getPassWordHash(params.password);
 
-        // 执行下一个数据查询操作
-        curd.next({ data, params }).value.then(({ db, data }) => {
+        // 用户写数据库
+        curd.next(params).value.then(({ dbCollection, result }) => {
+
             // 关闭数据库 / 返回客户端信息
-            db.close();
+            dbCollection.close();
             res.send(JSON.stringify({
                 code: 200,
                 msg: '用户注册成功！'

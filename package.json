@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "supervisor app.js",
+    "redis": "F:/redis/redis-cli.exe",
     "mongo": "cd F:/mongoDB/bin && mongod --dbpath F:/mongoDB/data"
   },
   "repository": {
