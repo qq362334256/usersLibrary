@@ -146,7 +146,7 @@ exports.createUser = ({ body }, res) => {
             dbCollection.close();
             res.send(JSON.stringify({
                 code: 200,
-                msg: '用户注册成功！'
+                msg: '用户注册成功'
             }));
         });
     });
