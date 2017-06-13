@@ -97,20 +97,20 @@ exports.createUser = ({ body }, res) => {
         const findRedisCode = redisGet({
             res,
             key: `phoneVerCode${params.phone}`
-        }).catch(error => console.error(`访问redis手机验证码出错!${error}`));
+        }).catch(error => console.error(`redis查询手机验证码出错!${error}`));
 
         // 查询mongo数据库，判断创建用户的验证码是否存在
         const findMongoCode = findOne(dbCollection, {
             res,
             query: { code: params.code, phone: params.phone }
-        }).catch(error => console.error(`访问mongo手机验证码出错!${error}`));
+        }).catch(error => console.error(`mongo查询手机验证码出错!${error}`));
 
 
         // 查询验证码
         const info = yield Promise.all([findRedisCode, findMongoCode]);
 
         // 插入新建用户信息
-        return insert(dbCollection, { res, info }).catch(error => console.error(`创建用户mongo插入出错!${error}`));;
+        return insert(dbCollection, { res, info }).catch(error => console.error(`mongo创建用户插入出错!${error}`));;
     }(params, res);
 
 
