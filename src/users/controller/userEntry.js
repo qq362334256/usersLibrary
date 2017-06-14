@@ -5,9 +5,11 @@
  */
 const os = require('os');
 const { validateParam } = require('./../../public/services/reqBody.service.js');
+const { getPassWordHash } = require('./../../public/utils/math.util.js');
 const { getAllErrorBody } = require('./../../public/utils/errorCodeHandle.util.js');
 const { mongodb, findOne } = require('./../../public/services/mongodb.service.js');
-const { getPassWordHash } = require('./../../public/utils/math.util.js');
+const { createToken } = require('./../../public/services/signature.service.js');
+
 
 // 登录
 exports.login = (req, res) => {
@@ -56,6 +58,13 @@ exports.login = (req, res) => {
 
             return;
         };
+
+
+        // 生成token
+        const { key, token, tokenId, createTime } = createToken();
+
+
+        console.log(token)
 
 
         // 登录成功的操作
