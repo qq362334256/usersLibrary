@@ -14,6 +14,9 @@ app.use([...require('./middleware/basic.js')]);
 // headers头中间件
 app.use(require('./middleware/headers.js'));
 
+// 签名校验中间件
+app.use(require('./middleware/signature.js'));
+
 
 // 引入验证码模块路由
 app.use('/verCode' ,require('./src/verCode/router.config.js'));

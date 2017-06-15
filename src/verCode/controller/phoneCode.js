@@ -34,14 +34,14 @@ exports.getPhoneVerCode = ({ query: body }, res) => {
         // 读取当前手机号的验证码信息
         yield redisGet({
             res,
-            key: `phoneVerCode${phone}`
+            key: `phoneVerCode-${phone}`
         }).catch(error => console.error(`redis读取当前手机号验证码是否存在出错！${error}`));
 
         // 写入验证码
         return redisSet({
             res,
             outTime,
-            key: `phoneVerCode${phone}`,
+            key: `phoneVerCode-${phone}`,
             val: randomNum
         }).then(() => randomNum)
           .catch(error => console.error(`redis写入当前手机号请求的验证码出错！${error}`));

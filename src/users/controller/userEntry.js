@@ -9,8 +9,9 @@ const { getPassWordHash } = require('./../../public/utils/math.util.js');
 const { getAllErrorBody } = require('./../../public/utils/errorCodeHandle.util.js');
 const { mongodb, findOne } = require('./../../public/services/mongodb.service.js');
 const { createToken } = require('./../../public/services/signature.service.js');
+const { redisSet } = require('./../../public/services/redis.service.js');
 
-
+createToken();
 // 登录
 exports.login = (req, res) => {
     let mustPar = { // 必传参数
@@ -33,10 +34,24 @@ exports.login = (req, res) => {
         // 连接数据库集合
         const dbCollection = mongodb.bind('C_USERS');
 
-        yield findOne(dbCollection, {
+        const info = yield findOne(dbCollection, {
             res,
             query: { phone: params.phone }
         }).catch(error => console.error(`mongo查询手机号码出错!${error}`));
+
+        // 写入当前唯一token到redis数据库
+        const { key, lock, tokenId, userId, createTime } = info;
+        return redisSet({
+            key: `tokenId-${tokenId}`,
+            res,
+            val: {
+                key,
+                lock,
+                userId,
+                createTime
+            },
+            outTime: 60 * 60 * 2 // 过期时间2小时
+        }).catch(error => console.error(`redis插入token信息出错!${error}`));
     }(params, res);
 
 
@@ -60,16 +75,24 @@ exports.login = (req, res) => {
         };
 
 
+        // 密码校验成功，进入下一个流
         // 生成token
-        const { key, token, tokenId, createTime } = createToken();
+        const { key, lock, token, tokenId, createTime } = createToken();
+        curd.next({
+            key,
+            lock,
+            tokenId,
+            createTime,
+            userId: params.userId
+        }).value.then(data => {
 
-
-        console.log(token)
-
-
-        // 登录成功的操作
-        res.send('登录成功!')
-
+            // 登录成功的操作
+            res.send(JSON.stringify({
+                data: { token },
+                code: 200,
+                msg: '登录成功'
+            }));
+        });
     })
 
 

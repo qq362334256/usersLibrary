@@ -9,36 +9,72 @@ const { getRandom } = require('./../utils/math.util.js');
 
 
 /*
+ * 解码token
+ * token(string) - 保存在客户端token串
+ * 返回：(object) - payload信息体和signature签名钥匙
+ */
+const undoToken = token => {
+    const [payload, signature] = token.split('.');
+
+    return {
+        signature,
+        payload: JSON.parse(Buffer.from(payload, 'base64').toString())
+    };
+};
+
+
+/*
+ * 获取锁
+ * key(string) - 保存在redis中的token唯一钥匙
+ * tokenKey(string) - 保存在客户端token的钥匙
+ * 返回：(string) - 生成的唯一锁
+ */
+const getLock = (key, tokenKey) => crypto.createHash('sha256').update(key + tokenKey).digest('hex');
+
+
+/*
  * 获取token
  */
 exports.createToken = () => {
-    // 生成当前token的唯一id
-    const tokenId = uuid();
+    // 生成当前token的唯一id /  / 当前的时间戳
+    const tokenId = uuid().replace(/-/g, '');
+    const createTime = new Date().getTime();
+    const random = getRandom(0, 999999999);
+    const encrypt = createTime.toString() + random.toString();
 
     // 生成 payload 载体
-    const payload = crypto.createHash('sha256').update(JSON.stringify({
+    const payload = Buffer.from(JSON.stringify({
         tokenId,
         type: 'JWT',
         iss: 'miaoyu-basics'
-    })).digest('base64');
+    })).toString('base64');
 
-    // 生成当前token唯一钥匙
-    const key = crypto.createHash('sha256').update(JSON.stringify({
+    // 生成当前token的(签名)(放在客户端的一把钥匙)
+    const signature = crypto.createHmac('sha256', encrypt).update(payload).digest('base64');
+
+    // 生成当前储存在服务端的唯一钥匙
+    const key = crypto.createHmac('sha256', encrypt).update(JSON.stringify({
         tokenId,
         type: 'JWT',
-        author: 'miaoyu',
         iss: 'miaoyu-basics',
-        random: getRandom(0, 999999999)
+        author: 'miaoyu'
     })).digest('hex');
 
-    // 生成当前token的锁(签名)
-    const signature = crypto.createHmac('sha256', key).update(payload).digest('base64');
+    // 生成当前token的唯一锁
+    const lock = crypto.createHash('sha256').update(key + signature).digest('hex');
 
     // 返回token
     return {
         key,
+        lock,
         tokenId,
-        createTime: Date.parse(new Date()),
+        createTime,
         token: `${payload}.${signature}`
     };
 };
+
+
+
+
+
+

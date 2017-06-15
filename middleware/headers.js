@@ -11,7 +11,7 @@ const router = express.Router();
 router.all('*', function(req, res, next) {
     res.header('Access-Control-Allow-Origin', '*'); // 支持跨域头
     res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS'); // 支持restful规范
-    res.header('Access-Control-Allow-Headers', 'Content-Type'); // 设置可请求头类型
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Access-Token'); // 设置可请求头类型
 
     next();
 });

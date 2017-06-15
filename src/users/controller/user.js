@@ -75,11 +75,11 @@ exports.createUser = ({ body }, res) => {
             },
             createTime: { // 创建时间
                 type: 'number',
-                val: Date.parse(new Date())
+                val: new Date().getTime()
             },
             updateTime: { // 修改时间
                 type: 'number',
-                val: Date.parse(new Date())
+                val: new Date().getTime()
             }
         }, mustPar),
         params = validateParam(mustPar, query, body, res); // 最终得值
@@ -96,7 +96,7 @@ exports.createUser = ({ body }, res) => {
         // 查询缓存数据库，判断创建用户的验证码缓存是否存在
         const findRedisCode = redisGet({
             res,
-            key: `phoneVerCode${params.phone}`
+            key: `phoneVerCode-${params.phone}`
         }).catch(error => console.error(`redis查询手机验证码出错!${error}`));
 
         // 查询mongo数据库，判断创建用户的验证码是否存在
