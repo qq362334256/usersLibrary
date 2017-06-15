@@ -11,7 +11,7 @@ const { mongodb, findOne } = require('./../../public/services/mongodb.service.js
 const { createToken } = require('./../../public/services/signature.service.js');
 const { redisSet } = require('./../../public/services/redis.service.js');
 
-createToken();
+
 // 登录
 exports.login = (req, res) => {
     let mustPar = { // 必传参数
@@ -29,6 +29,9 @@ exports.login = (req, res) => {
     if (!params) return;
 
 
+    // 过期时间2小时
+    const outTime = 60 * 60 * 2
+
     // 数据库CURD操作
     const curd = function* (params, res) {
         // 连接数据库集合
@@ -40,17 +43,16 @@ exports.login = (req, res) => {
         }).catch(error => console.error(`mongo查询手机号码出错!${error}`));
 
         // 写入当前唯一token到redis数据库
-        const { key, lock, tokenId, userId, createTime } = info;
+        const { key, lock, tokenId, createTime } = info;
         return redisSet({
-            key: `tokenId-${tokenId}`,
             res,
+            outTime,
+            key: `tokenId-${tokenId}`,
             val: {
                 key,
                 lock,
-                userId,
                 createTime
-            },
-            outTime: 60 * 60 * 2 // 过期时间2小时
+            }
         }).catch(error => console.error(`redis插入token信息出错!${error}`));
     }(params, res);
 
@@ -74,21 +76,22 @@ exports.login = (req, res) => {
             return;
         };
 
-
         // 密码校验成功，进入下一个流
         // 生成token
-        const { key, lock, token, tokenId, createTime } = createToken();
+        const { key, lock, token, tokenId, createTime } = createToken(data.userId);
         curd.next({
             key,
             lock,
             tokenId,
-            createTime,
-            userId: params.userId
+            createTime
         }).value.then(data => {
 
             // 登录成功的操作
             res.send(JSON.stringify({
-                data: { token },
+                data: {
+                    token,
+                    tokenOutTime: outTime * 1000
+                },
                 code: 200,
                 msg: '登录成功'
             }));

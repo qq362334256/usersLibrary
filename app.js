@@ -18,8 +18,12 @@ app.use(require('./middleware/headers.js'));
 app.use(require('./middleware/signature.js'));
 
 
+// 引入测试路由
+app.use('/test' ,require('./src/test/router.config.js'));
+
 // 引入验证码模块路由
 app.use('/verCode' ,require('./src/verCode/router.config.js'));
+
 // 引入用户模块路由
 app.use('/users' ,require('./src/users/router.config.js'));
 

@@ -17,9 +17,10 @@ const getFullParam = (query, reqBody) => {
     let params = {};
 
     Object.keys(query).forEach(key => {
-        const currVal = reqBody[key];
+        const currVal = reqBody[key] || query[key].val;
 
-        params[key] = currVal ? currVal : query[key].val;
+        // 字符串删前后空格
+        params[key] = typeof currVal === 'string' ? currVal.trim() : currVal;
     });
 
     return params;
