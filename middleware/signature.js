@@ -9,9 +9,7 @@ const { signatureToken } = require('./../src/public/services/signature.service.j
 
 
 // 所有请求都会经过签名服务
-router.all('*', function(req, res, next) {
-    signatureToken(req, res, next)
-});
+router.all('*', signatureToken);
 
 
 // 导出res响应头中间件
