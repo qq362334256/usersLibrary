@@ -116,7 +116,19 @@ exports.login = (req, res) => {
 
 // 注销
 exports.logout = (req, res) => {
-    console.log(111)
+    let mustPar = { // 必传参数
+            tokenId: { // tokenId
+                type: 'string'
+            }
+        },
+        query = Object.assign({}, mustPar), // 预设值
+        params = validateParam(mustPar, query, req.body, res); // 最终得值
+
+    // 全部通过验证服务返回正确的参数才能继续
+    if (!params) return;
+
+
+    console.log(params)
 
     res.send('logout');
 };

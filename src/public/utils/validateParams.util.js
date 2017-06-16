@@ -5,6 +5,10 @@
  */
 // 参数配置
 const validateConfig = {
+    tokenId: {
+        name: 'tokenId',
+        patt: /^[0-9a-zA-Z\+=\.\/\,:\?;]+$/
+    },
     phone: {
         name: '手机号',
         patt: /^1(3|4|5|7|8)[0-9]{9}$/

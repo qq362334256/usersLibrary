@@ -10,11 +10,11 @@ const { redisGet } = require('./redis.service.js');
 
 
 // 配置不用校验的接口
-const configAPI = [
-    '/verCode/phoneCode',
-    '/users/user',
-    '/users/userEntry'
-];
+const configAPI = {
+    '/verCode/phoneCode': ['GET'],
+    '/users/user': ['POST'],
+    '/users/userEntry': ['POST']
+};
 
 
 /*
@@ -56,7 +56,7 @@ const getLock = (key, tokenKey) => crypto.createHash('sha256').update(key + toke
  */
 exports.createToken = userId => {
     // 生成当前token的唯一id / 当前的时间戳 / 当前随机数 / 加密规则
-    const tokenId = userId.replace(/-/g, '');
+    const tokenId = userId;
     const createTime = new Date().getTime();
     const random = getRandom(0, 999999999);
     const encrypt = createTime.toString() + random.toString();
@@ -100,11 +100,12 @@ exports.createToken = userId => {
  * res(object) - 流进来的res对象
  * next(function) - 流进来的next方法
  */
-exports.signatureToken = ({ path, method, headers }, res, next) => {
+exports.signatureToken = (req, res, next) => {
+    const { path, method, headers } = req;
     const token = headers['access-token'];
 
     // 如果是options或者非校验接口直接到下一步
-    if (configAPI.indexOf(path) > -1 || method === 'OPTIONS') {
+    if (configAPI[path] && configAPI[path].indexOf(method) > -1 || method === 'OPTIONS') {
         next();
 
         return;
@@ -145,6 +146,10 @@ exports.signatureToken = ({ path, method, headers }, res, next) => {
                 return;
             };
 
+
+            // 查询到的tokenId添加到body参数里面
+            req.body.tokenId = tokenId;
+            req.query.tokenId = tokenId;
 
             // 签名没有问题，可以进入下一个流
             next();

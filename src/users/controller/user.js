@@ -136,7 +136,7 @@ exports.createUser = ({ body }, res) => {
 
         // 没有注册可以进行其他操作
         // 生成 userid / 编译密码
-        params.userId = uuid();
+        params.userId = uuid().replace(/-/g, '');
         params.password = getPassWordHash(params.password);
 
         // 用户写数据库
