@@ -102,7 +102,7 @@ exports.createUser = ({ body }, res) => {
         // 查询mongo数据库，判断创建用户的验证码是否存在
         const findMongoCode = findOne(dbCollection, {
             res,
-            query: { code: params.code, phone: params.phone }
+            query: { phone: params.phone }
         }).catch(error => console.error(`mongo查询手机验证码出错!${error}`));
 
 
@@ -125,6 +125,7 @@ exports.createUser = ({ body }, res) => {
             return;
         };
 
+        console.log(mongoData)
         // 查询userId，如果有userId就说明已经注册了
         if (mongoData && mongoData.userId) {
             dbCollection.close();

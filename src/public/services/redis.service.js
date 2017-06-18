@@ -58,5 +58,31 @@ exports.redisGet = ({ key, res }) => new Promise((resolve, reject) => {
         // 设置成功返回的状态
         resolve(JSON.parse(data));
     });
+});
+
+
+/*
+ * 删除key
+ * { key(string) - 键名, res(object) - req返回体对 }
+ * 返回：pomise对象
+ */
+exports.redisDel = ({ key, res }) => new Promise((resolve, reject) => {
+
+    // 写入redis数据库
+    redisClient.del(key, (error, data) => {
+
+        // 数据库查询出错
+        if (error) {
+            res.send(getAllErrorBody(['redis数据库删除出错！'], 520));
+
+            // 设置失败返回的状态
+            reject(error);
+
+            return;
+        };
+
+        // 设置成功返回的状态
+        resolve(JSON.parse(data));
+    });
 });;
 

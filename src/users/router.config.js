@@ -11,9 +11,10 @@ const router = express.Router();
 router.post('/user', require('./controller/user.js').createUser);
 
 
-// 登录 / 注销
-const { login, logout } = require('./controller/userEntry.js');
+// 登录 / 刷新登录 / 注销
+const { login, refresh, logout } = require('./controller/userEntry.js');
 router.post('/userEntry', login);
+router.put('/userEntry', refresh);
 router.delete('/userEntry', logout);
 
 

@@ -9,7 +9,7 @@ const { getPassWordHash } = require('./../../public/utils/math.util.js');
 const { getAllErrorBody } = require('./../../public/utils/errorCodeHandle.util.js');
 const { mongodb, findOne } = require('./../../public/services/mongodb.service.js');
 const { createToken } = require('./../../public/services/signature.service.js');
-const { redisSet } = require('./../../public/services/redis.service.js');
+const { redisSet, redisGet, redisDel } = require('./../../public/services/redis.service.js');
 
 
 // 登录
@@ -29,7 +29,7 @@ exports.login = (req, res) => {
     if (!params) return;
 
 
-    // 过期时间2小时
+    // 过期时间2小时（以秒为单位）
     const outTime = 60 * 60 * 2
 
     // 数据库CURD操作
@@ -90,7 +90,7 @@ exports.login = (req, res) => {
             res.send(JSON.stringify({
                 data: {
                     token,
-                    tokenOutTime: outTime * 1000
+                    tokenOutTime: outTime * 1000 // 返回客户端以分为单位
                 },
                 code: 200,
                 msg: '登录成功'
@@ -100,6 +100,7 @@ exports.login = (req, res) => {
 
 
     // 输出信息信息
+    // 这些信息是为了做登录记录的
     // console.log(`ip - ${req.ip}`)
     // console.log(`cpu - ${os.arch()}`)
     // console.log(`cpu线程 - ${os.cpus().forEach(val => console.log(val))}`)
@@ -111,6 +112,52 @@ exports.login = (req, res) => {
     // console.log(`操作系统 - ${os.platform()} - ${os.release()} - ${os.type()}`)
     // console.log(`用户信息 - ${Object.entries(os.userInfo()).forEach(val => console.log(val))}`)
 
+};
+
+
+// 刷新登录
+exports.refresh = (req, res) => {
+    let mustPar = { // 必传参数
+            tokenId: { // tokenId
+                type: 'string'
+            }
+        },
+        query = Object.assign({}, mustPar), // 预设值
+        params = validateParam(mustPar, query, req.body, res); // 最终得值
+
+    // 全部通过验证服务返回正确的参数才能继续
+    if (!params) return;
+
+
+    // 生成新token
+    const { key, lock, token, tokenId, createTime } = createToken(params.tokenId);
+
+    // 过期时间2小时(以秒为单位)
+    const outTime = 60 * 60 * 2
+
+    // 写入新token到数据库
+    return redisSet({
+        res,
+        outTime,
+        key: `tokenId-${tokenId}`,
+        val: {
+            key,
+            lock,
+            createTime
+        }
+    }).catch(error => console.error(`redis插入token信息出错!${error}`))
+      .then(data => {
+
+          // 刷新成功的操作
+          res.send(JSON.stringify({
+              data: {
+                  token,
+                  tokenOutTime: outTime * 1000 // 返回客户端以分为单位
+              },
+              code: 200,
+              msg: '刷新登录成功'
+          }));
+      });
 };
 
 
@@ -128,7 +175,15 @@ exports.logout = (req, res) => {
     if (!params) return;
 
 
-    console.log(params)
-
-    res.send('logout');
+    // 查询缓存服务中的登录令牌
+    redisDel({
+        res,
+        key: `tokenId-${params.tokenId}`,
+    }).catch(error => console.error(`redis查询tokenId出错!${error}`))
+      .then(data => {
+          res.send(JSON.stringify({
+              code: 200,
+              msg: '注销成功'
+          }));
+      });
 };
