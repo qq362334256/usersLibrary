@@ -125,7 +125,6 @@ exports.createUser = ({ body }, res) => {
             return;
         };
 
-        console.log(mongoData)
         // 查询userId，如果有userId就说明已经注册了
         if (mongoData && mongoData.userId) {
             dbCollection.close();
